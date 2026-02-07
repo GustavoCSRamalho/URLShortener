@@ -1,39 +1,57 @@
-//
-//  URLShortenerUITests.swift
-//  URLShortenerUITests
-//
-//  Created by Gustavo Ramalho on 07/02/26.
-//
-
 import XCTest
 
 final class URLShortenerUITests: XCTestCase {
-
+    
+    var app: XCUIApplication!
+    
     override func setUpWithError() throws {
-        // Put setup code here. This method is called before the invocation of each test method in the class.
-
-        // In UI tests it is usually best to stop immediately when a failure occurs.
         continueAfterFailure = false
-
-        // In UI tests it’s important to set the initial state - such as interface orientation - required for your tests before they run. The setUp method is a good place to do this.
-    }
-
-    override func tearDownWithError() throws {
-        // Put teardown code here. This method is called after the invocation of each test method in the class.
-    }
-
-    @MainActor
-    func testExample() throws {
-        // UI tests must launch the application that they test.
-        let app = XCUIApplication()
+        app = XCUIApplication()
         app.launch()
-
-        // Use XCTAssert and related functions to verify your tests produce the correct results.
     }
-
-    @MainActor
-    func testLaunchPerformance() throws {
-        // This measures how long it takes to launch your application.
+    
+    override func tearDownWithError() throws {
+        app = nil
+    }
+    
+    func testInitialState() {
+        XCTAssertTrue(app.navigationBars["URL Shortener"].exists)
+        XCTAssertTrue(app.textFields["urlInput"].exists)
+        XCTAssertTrue(app.buttons["shortenButton"].exists)
+    }
+    
+    func testInputField_AcceptsText() {
+        let textField = app.textFields["urlInput"]
+        
+        textField.tap()
+        textField.typeText("https://www.apple.com")
+        
+        XCTAssertEqual(textField.value as? String, "https://www.apple.com")
+    }
+    
+    func testShortenButton_InitiallyDisabled() {
+        let button = app.buttons["shortenButton"]
+        
+        XCTAssertFalse(button.isEnabled)
+    }
+    
+    func testShortenButton_EnabledWithValidURL() {
+        let textField = app.textFields["urlInput"]
+        let button = app.buttons["shortenButton"]
+        
+        textField.tap()
+        textField.typeText("https://www.apple.com")
+        
+        sleep(1)
+        
+        XCTAssertTrue(button.isEnabled)
+    }
+    
+    func testEmptyState_DisplayedInitially() {
+        XCTAssertTrue(app.staticTexts["Nenhuma URL encurtada ainda"].exists)
+    }
+    
+    func testLaunchPerformance() {
         measure(metrics: [XCTApplicationLaunchMetric()]) {
             XCUIApplication().launch()
         }
